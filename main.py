@@ -22,6 +22,13 @@ class Block(pygame.sprite):
     def __init__(self):
         self.blockpos = []
         self.blockimage = ""
+        self.surf = "" # TODO Make this actable
+        self.rect = ""
+
+    def render(self, campos, background, width, height):
+        background.blit(self.surf, 
+                (width / 2 + (self.rect.width * 10) - campos[0],
+                    height / 2 + self.rect.height * 10 - campos[1]))
 
 class Scene(object):
     def __init__(self):
@@ -34,19 +41,31 @@ class Scene(object):
             background.blit(*text.getrender())
 
 class Level(Scene):
-    def __init__(self):
+    def __init__(self, screen, background):
         self.blocks = []
+        self.camera = Camera(self, screen, background)
 
     def render(self):
         for block in self.blocks:
             block.render()
 
-class Camera():
-    def __init__(self, level, screen):
+class Camera(object):
+    def __init__(self, level, screen, background):
         self.level = level
         self.position = [0, 0]
         self.screen = screen
+        self.background = background
 
+    def render(self):
+        width = window.get_width()
+        height = window.get_height()
+        for block in level.blocks:
+            # Is block within camera range?
+            if  block.position[0] < self.pos[0] + width  / 2 and \
+                block.position[0] > self.pos[0] - width  / 2 and \
+                block.position[1] < self.pos[1] + height / 2 and \
+                blocl.position[1] > self.pos[1] - height / 2:
+                    block.render(self.pos, self.background, width, height)
 def __main__():
     screen = pygame.display.set_mode([500, 500])
 
