@@ -4,10 +4,40 @@ TBF = 1 # Time Between Frames (in seconds)
 
 pygame.init()
 
+stdFont = pygame.font.Font(None, 30)
+
+class Text(object):
+    def __init__(self, string, color, position):
+        self.string = string
+        self.color = color
+        self.position = position
+
+    def getrender(self):
+        surf = stdFont.render(self.string, 1, self.color)
+        rect = surf.get_rect()
+        rect.center = self.position
+        return surf, rect
+
+class Scene(object):
+    def __init__(self):
+        self.texts = []
+        self.images = []
+
+    def render(self, background):
+        for image in self.images:
+            image.render()
+        for text in self.texts:
+            background.blit(*text.getrender())
+
 def __main__():
     screen = pygame.display.set_mode([500, 500])
 
     start = time.time()
+
+    opening_scene = Scene()
+    welcome_text = Text('Welcome to Plat', (240, 10, 240), (screen.get_size()[0] /2, screen.get_size()[1] /2))
+    opening_scene.texts.append(welcome_text)
+    cur_scene = opening_scene
 
     while 1:
         background = pygame.Surface(screen.get_size())
@@ -22,6 +52,7 @@ def __main__():
         for event in pygame.event.get():
             if event.type == pygame.QUIT: sys.exit()
 
+        cur_scene.render(background)
         screen.blit(background, (0, 0))
         pygame.display.flip()
 
