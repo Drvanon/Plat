@@ -18,16 +18,34 @@ class Text(object):
         rect.center = self.position
         return surf, rect
 
+class Block(pygame.sprite):
+    def __init__(self):
+        self.blockpos = []
+        self.blockimage = ""
+
 class Scene(object):
     def __init__(self):
         self.texts = []
-        self.images = []
+        self.background_image = None
 
     def render(self, background):
-        for image in self.images:
-            image.render()
+        background.blit(self.background_image, (0, 0))
         for text in self.texts:
             background.blit(*text.getrender())
+
+class Level(Scene):
+    def __init__(self):
+        self.blocks = []
+
+    def render(self):
+        for block in self.blocks:
+            block.render()
+
+class Camera():
+    def __init__(self, level, screen):
+        self.level = level
+        self.position = [0, 0]
+        self.screen = screen
 
 def __main__():
     screen = pygame.display.set_mode([500, 500])
@@ -55,6 +73,5 @@ def __main__():
         cur_scene.render(background)
         screen.blit(background, (0, 0))
         pygame.display.flip()
-
 
 if __name__ == "__main__": __main__()
