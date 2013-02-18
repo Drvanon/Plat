@@ -1,0 +1,15 @@
+meta          : true
+nmbrofsprites : 4
+sheetname     : example.png
+---
+name       : dirt
+spritenmbr : 1
+---
+name       : stone
+spritenmbr : 2
+---
+name       : wood
+spritenmbr : 3
+---
+name       : brick
+spritenmbr : 4

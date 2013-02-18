@@ -1,40 +1,79 @@
-# This class handles sprite sheets
-# This was taken from www.scriptefun.com/transcript-2-using
-# sprite-sheets-and-drawing-the-background
-# I've added some code to fail if the file wasn't found..
-# Note: When calling images_at the rect is the format:
-# (x, y, x + offset, y + offset)
+from __future__ import print_function
 
-import pygame, sys
+import pygame, sys, yaml
+import level
 
-class Spritesheet(object):
-    def __init__(self, filename):
+class OwnSpriteSheet(object):
+    def __init__(self, filename, number_of_sprites, spritewidth=10, spriteheight=10):
         try:
+            self.images = []
             self.sheet = pygame.image.load(filename)
-        except pygame.error, message:
-            print 'Unable to load spritesheet image:', filename
+            self.sheet_width = self.sheet.get_width()
+            self.sheet_height = self.sheet.get_height()
+
+            for i in range(number_of_sprites):
+                x = i * spritewidth
+                y = 0
+                while x > self.sheet_width:
+                    x -= self.sheet_width
+                    y += spriteheight
+
+                print(x, y)
+                self.images.append(self.image_at((x, y, spritewidth, spriteheight)))
+
+        except pygame.error:
+            print("Unable to load spritesheet image:", filename)
             sys.exit(1)
 
-    # Load a specific image from a specific rectangle
     def image_at(self, rectangle, colorkey = None):
-        "Loads image from x,y,x+offset,y+offset"
         rect = pygame.Rect(rectangle)
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)
+
         if colorkey is not None:
             if colorkey is -1:
                 colorkey = image.get_at((0,0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
+
         return image
 
-    # Load a whole bunch of images and return them as a list
-    def images_at(self, rects, colorkey = None):
-        "Loads multiple images, supply a list of coordinates" 
-        return [self.image_at(rect, colorkey) for rect in rects]
+def spriteReader(filename):
+    stream = open(filename, 'r')
+    data = yaml.load_all(stream)
 
-    # Load a whole strip of images
-    def load_strip(self, rect, image_count, colorkey = None):
-        "Loads a strip of images and returns them as a list"
-        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
-                for x in range(image_count)]
-        return self.images_at(tups, colorkey)
+    blocks = []
+    spritesheet = ""
+    for dataset in data:
+        if not "meta" in dataset:
+            blocks.append(dataset)
+        else:
+            spritesheet = OwnSpriteSheet(dataset['sheetname'], dataset['nmbrofsprites'])
+
+    all_blocks = {}
+    for block in blocks:
+        all_blocks[block['name']] = level.Block(
+                block['name'],
+                spritesheet.images[int(block['spritenmbr']) -1])
+    return all_blocks
+
+def test():
+    pygame.init()
+
+    screen = pygame.display.set_mode([500, 500])
+
+    blocks = spriteReader('example.yaml')
+
+    i = 0
+    for block in blocks:
+        pygame.image.save(blocks[block].image, 'test' + str(i) + ".png")
+        i +=1
+
+    while 1:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit()
+
+        pygame.display.flip()
+
+
+if __name__ == "__main__": test()
